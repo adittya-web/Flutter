@@ -29,7 +29,7 @@ class _TrackingPageState extends State<TrackingPage> {
 
     final response = await http.get(
       Uri.parse(
-        'http://192.168.24.88/admin_app/public/api/bookings/${widget.bookingId}',
+        'http://172.20.10.5/kelompok_mobile/public/api/bookings/${widget.bookingId}',
       ),
       headers: {
         'Authorization': 'Bearer $token',

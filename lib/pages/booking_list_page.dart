@@ -27,7 +27,7 @@ class _BookingListPageState extends State<BookingListPage> {
     final token = prefs.getString('token');
 
     final response = await http.get(
-      Uri.parse('http://192.168.24.88/admin_app/public/api/bookings'),
+      Uri.parse('http://172.20.10.5/kelompok_mobile/public/api/bookings'),
       headers: {'Authorization': 'Bearer $token'},
     );
 

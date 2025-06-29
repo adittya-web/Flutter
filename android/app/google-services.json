@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "651871720395",
+    "project_id": "tugaskelompok-e3c01",
+    "storage_bucket": "tugaskelompok-e3c01.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:651871720395:android:9a22015aeafaa713b9dc4e",
+        "android_client_info": {
+          "package_name": "com.example.tugaskelompok"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "651871720395-ga775shqvkef86h2r6fdjunbntu7nrbc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGjEGlQO4dXdoRoONhcpwVF4XnfsD1LNk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "651871720395-ga775shqvkef86h2r6fdjunbntu7nrbc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
