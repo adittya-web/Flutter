@@ -1,133 +1,204 @@
-// lib/screens/login_screen.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/firebase_auth_service.dart';
+import 'loading_success_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   final FirebaseAuthService _authService = FirebaseAuthService();
-  bool _isLoading = false;
+  bool isLoading = false;
+  bool isGoogleLoading = false;
 
-  Future<void> _handleGoogleSignIn() async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> login() async {
+    setState(() => isLoading = true);
+    final url = Uri.parse("http://172.20.10.5/kelompok_mobile/public/api/login");
 
     try {
-      final result = await _authService.signInWithGoogle();
+      final response = await http.post(
+        url,
+        headers: {'Accept': 'application/json'},
+        body: {
+          'email': emailController.text,
+          'password': passwordController.text,
+        },
+      );
 
-      if (result != null) {
-        // Navigation will be handled automatically by AuthWrapper
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login berhasil!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'];
+        final user = data['user'];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+        await prefs.setString('user', jsonEncode(user));
+
+        if (!mounted) return;
+        _navigateToLoadingScreen(user);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login dibatalkan'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        _showErrorDialog();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showErrorDialog();
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => isLoading = false);
     }
+  }
+
+  Future<void> loginWithGoogle() async {
+    setState(() => isGoogleLoading = true);
+    try {
+      final userCredential = await _authService.signInWithGoogle();
+      final user = userCredential?.user;
+      if (user == null) return;
+
+      final userData = {
+        'name': user.displayName,
+        'email': user.email,
+        'avatar': user.photoURL ?? '',
+        'provider': 'google'
+      };
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', 'GOOGLE_FIREBASE_TOKEN');
+      await prefs.setString('user', jsonEncode(userData));
+
+      if (!mounted) return;
+      _navigateToLoadingScreen(userData);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal login dengan Google')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isGoogleLoading = false);
+    }
+  }
+
+  void _navigateToLoadingScreen(dynamic user) {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => LoadingSuccessScreen(user: user),
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
+  }
+
+  void _showErrorDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Login Gagal"),
+        content: const Text("Email atau password salah."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true, // pastikan true
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Logo atau Icon
-              Icon(Icons.local_laundry_service, size: 80, color: Colors.blue),
-              SizedBox(height: 40),
-
-              // Welcome Text
-              Text(
-                'Laundry App',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+          padding: const EdgeInsets.all(24.0),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 40),
+                const Icon(Icons.local_laundry_service, size: 80, color: Colors.blue),
+                const SizedBox(height: 20),
+                Text(
+                  'Laundry App',
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-
-              SizedBox(height: 12),
-
-              Text(
-                'Silakan masuk dengan akun Google Anda',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              ),
-
-              SizedBox(height: 48),
-
-              // Google Sign In Button
-              ElevatedButton.icon(
-                onPressed: _isLoading ? null : _handleGoogleSignIn,
-                icon:
-                    _isLoading
-                        ? SizedBox(
-                          width: 20,
+                const SizedBox(height: 12),
+                Text(
+                  'Masuk ke akun Anda',
+                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: const Icon(Icons.email),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: isLoading ? null : login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Login"),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: isGoogleLoading ? null : loginWithGoogle,
+                  icon: isGoogleLoading
+                      ? const SizedBox(
                           height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                        : Icon(Icons.login, color: Colors.white),
-                label: Text(
-                  _isLoading ? 'Sedang masuk...' : 'Masuk dengan Google',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                      : Image.asset('assets/google.png', height: 24),
+                  label: Text(
+                    isGoogleLoading ? 'Masuk...' : 'Login dengan Google',
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 2,
-                ),
-              ),
-
-              SizedBox(height: 24),
-
-              // Info text
-              Text(
-                'Dengan masuk, Anda menyetujui syarat dan ketentuan aplikasi',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-              ),
-            ],
+                // Tambahkan SizedBox bawah supaya ada spasi bawah scroll
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
