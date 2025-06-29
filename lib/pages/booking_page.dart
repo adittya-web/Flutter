@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lottie/lottie.dart';
+import '../../../../screens/home_screen.dart';
 
 class BookingPage extends StatefulWidget {
   const BookingPage({super.key});
@@ -36,11 +38,10 @@ class _BookingPageState extends State<BookingPage> {
       setState(() {
         services = data['data'];
       });
-      print('Services loaded: $services');
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Gagal memuat layanan')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal memuat layanan')),
+      );
     }
   }
 
@@ -53,9 +54,20 @@ class _BookingPageState extends State<BookingPage> {
     );
 
     if (picked != null) {
-      setState(() {
-        pickupDateController.text = picked.toIso8601String().split('T')[0];
-      });
+      pickupDateController.text = picked.toIso8601String().split('T')[0];
+    }
+  }
+
+  Future<void> navigateBackWithAnimation() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const FullscreenLottieScreen(),
+    );
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      Navigator.of(context).pop(); // tutup dialog
+      Navigator.of(context).pop(); // kembali
     }
   }
 
@@ -64,9 +76,9 @@ class _BookingPageState extends State<BookingPage> {
         weightController.text.isEmpty ||
         pickupDateController.text.isEmpty ||
         addressController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Semua field wajib diisi')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Semua field wajib diisi')),
+      );
       return;
     }
 
@@ -93,21 +105,22 @@ class _BookingPageState extends State<BookingPage> {
     setState(() => isLoading = false);
 
     if (response.statusCode == 201) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Booking berhasil dikirim')));
-      weightController.clear();
-      pickupDateController.clear();
-      addressController.clear();
-      setState(() {
-        selectedServiceId = null;
-      });
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const FullscreenLottieScreen(),
+      );
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) {
+        Navigator.of(context).pop();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => HomeScreen()),
+        );
+      }
     } else {
       final data = json.decode(response.body);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal: ${data['message'] ?? 'Terjadi kesalahan'}'),
-        ),
+        SnackBar(content: Text('Gagal: ${data['message'] ?? 'Terjadi kesalahan'}')),
       );
     }
   }
@@ -115,60 +128,125 @@ class _BookingPageState extends State<BookingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tambah Booking')),
+      appBar: AppBar(
+        title: const Text('Form Booking Laundry'),
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: navigateBackWithAnimation,
+        ),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
+            Text(
+              'Isi detail booking Anda di bawah ini:',
+              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+            ),
+            const SizedBox(height: 20),
             services.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : DropdownButtonFormField<String>(
-                  value: selectedServiceId,
-                  decoration: const InputDecoration(labelText: 'Pilih Layanan'),
-                  isExpanded: true,
-                  hint: const Text('-- Pilih Layanan --'),
-                  items:
-                      services
-                          .where((s) => s['id'] != null && s['nama'] != null)
-                          .map<DropdownMenuItem<String>>((service) {
-                            return DropdownMenuItem<String>(
-                              value: service['id'].toString(),
-                              child: Text(service['nama']),
-                            );
-                          })
-                          .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedServiceId = value!;
-                    });
-                  },
-                ),
-            const SizedBox(height: 12),
+                    value: selectedServiceId,
+                    decoration: InputDecoration(
+                      labelText: 'Pilih Layanan',
+                      prefixIcon: const Icon(Icons.local_laundry_service),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    isExpanded: true,
+                    items: services
+                        .where((s) => s['id'] != null && s['nama'] != null)
+                        .map<DropdownMenuItem<String>>((service) {
+                      return DropdownMenuItem<String>(
+                        value: service['id'].toString(),
+                        child: Text(service['nama']),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedServiceId = value;
+                      });
+                    },
+                  ),
+            const SizedBox(height: 16),
             TextField(
               controller: weightController,
-              decoration: const InputDecoration(labelText: 'Berat (kg)'),
+              decoration: InputDecoration(
+                labelText: 'Berat Cucian (kg)',
+                prefixIcon: const Icon(Icons.monitor_weight),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: pickupDateController,
-              decoration: const InputDecoration(labelText: 'Tanggal Jemput'),
+              decoration: InputDecoration(
+                labelText: 'Tanggal Penjemputan',
+                prefixIcon: const Icon(Icons.calendar_today),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               readOnly: true,
               onTap: selectDate,
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: addressController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Alamat Penjemputan',
+                prefixIcon: const Icon(Icons.location_on),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
+              maxLines: 2,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                  onPressed: submitBooking,
-                  child: const Text('Kirim Booking'),
-                ),
+                : ElevatedButton.icon(
+                    onPressed: submitBooking,
+                    icon: const Icon(Icons.send),
+                    label: const Text('Kirim Booking'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(fontSize: 16),
+                    ),
+                  ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class FullscreenLottieScreen extends StatelessWidget {
+  const FullscreenLottieScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Lottie.asset(
+          'assets/lottie/Animation - 1751188217430.json',
+          width: 200,
+          height: 200,
+          repeat: false,
         ),
       ),
     );

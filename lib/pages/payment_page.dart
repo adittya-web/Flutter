@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
-
-import 'home_page.dart'; // Tambahkan ini
+import 'package:tugaskelompok/screens/home_screen.dart';
+import 'package:lottie/lottie.dart';
 
 class PaymentPage extends StatefulWidget {
   final int bookingId;
@@ -72,18 +72,25 @@ class _PaymentPageState extends State<PaymentPage> {
       setState(() => isLoading = false);
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pembayaran berhasil dikirim')),
-        );
+        // Tampilkan animasi Lottie fullscreen
+        Navigator.of(context).push(PageRouteBuilder(
+          opaque: false,
+          barrierDismissible: false,
+          pageBuilder: (_, __, ___) => const FullscreenLottieScreen(),
+        ));
 
-        // Ambil data user dari SharedPreferences
+        await Future.delayed(const Duration(seconds: 2));
+
+        if (!mounted) return;
+
+        Navigator.of(context).pop(); // tutup layar animasi
+
         final userString = prefs.getString('user');
         final user = userString != null ? jsonDecode(userString) : {};
 
-        // Navigasi kembali ke HomePage dan hapus semua stack
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => HomePage(user: user)),
+          MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
           (route) => false,
         );
       } else {
@@ -99,30 +106,76 @@ class _PaymentPageState extends State<PaymentPage> {
     }
   }
 
+  Future<void> navigateBackWithAnimation() async {
+    Navigator.of(context).push(PageRouteBuilder(
+      opaque: false,
+      barrierDismissible: false,
+      pageBuilder: (_, __, ___) => const FullscreenLottieScreen(),
+    ));
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      Navigator.of(context).pop(); // tutup layar animasi
+      Navigator.of(context).pop(); // kembali ke halaman sebelumnya
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async {
+        await navigateBackWithAnimation();
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Upload Pembayaran'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: navigateBackWithAnimation,
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _image != null
+                  ? Image.file(_image!, height: 200)
+                  : const Text('Belum ada gambar'),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: pickImage,
+                child: const Text('Pilih Gambar'),
+              ),
+              const SizedBox(height: 20),
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: uploadPayment,
+                      child: const Text('Kirim Pembayaran'),
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FullscreenLottieScreen extends StatelessWidget {
+  const FullscreenLottieScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Upload Pembayaran')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _image != null
-                ? Image.file(_image!, height: 200)
-                : const Text('Belum ada gambar'),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: pickImage,
-              child: const Text('Pilih Gambar'),
-            ),
-            const SizedBox(height: 20),
-            isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: uploadPayment,
-                    child: const Text('Kirim Pembayaran'),
-                  ),
-          ],
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Lottie.asset(
+          'assets/lottie/Animation - 1751188217430.json',
+          width: 200,
+          height: 200,
+          repeat: false,
         ),
       ),
     );

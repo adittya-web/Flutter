@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import '../pages/booking_page.dart';
+import '../pages/booking_list_page.dart';
+import '../pages/payment_history_page.dart';
+import '../pages/tracking_page.dart' as tracking_page;
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
+import '../screens/loading_transition_screen.dart'; // <== Tambahkan ini
+import 'auth_wrapper.dart';
 
 class HomeScreen extends StatelessWidget {
+  final Map<String, dynamic>? user;
+
+  HomeScreen({Key? key, this.user}) : super(key: key);
+
   final FirebaseAuthService _authService = FirebaseAuthService();
 
   Future<void> _showLogoutDialog(BuildContext context) async {
@@ -10,20 +20,22 @@ class HomeScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Keluar'),
-          content: Text('Apakah Anda yakin ingin keluar?'),
+          title: const Text('Keluar'),
+          content: const Text('Apakah Anda yakin ingin keluar?'),
           actions: [
             TextButton(
-              child: Text('Batal'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              child: const Text('Batal'),
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: Text('Keluar'),
+              child: const Text('Keluar'),
               onPressed: () async {
                 Navigator.of(context).pop();
                 await _authService.signOut();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => AuthWrapper()),
+                  (route) => false,
+                );
               },
             ),
           ],
@@ -36,12 +48,27 @@ class HomeScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required String subtitle,
-    required VoidCallback onTap,
+    required Widget targetPage,
+    required BuildContext context,
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                LoadingTransitionScreen(targetPage: targetPage), // <== arahkan ke screen loading
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              final tween = Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
+                  .chain(CurveTween(curve: Curves.easeInOut));
+              return SlideTransition(position: animation.drive(tween), child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 400),
+          ),
+        );
+      },
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -50,7 +77,7 @@ class HomeScreen extends StatelessWidget {
             BoxShadow(
               color: Colors.grey.shade100,
               blurRadius: 4,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -58,21 +85,14 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 32, color: Colors.blue),
-            SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
+            const SizedBox(height: 8),
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
+            const SizedBox(height: 4),
+            Text(subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600])),
           ],
         ),
       ),
@@ -81,30 +101,33 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final User? user = _authService.getCurrentUser();
+    final User? firebaseUser = _authService.getCurrentUser();
+
+    final String displayName = user?['name'] ?? firebaseUser?.displayName ?? 'Pengguna';
+    final String email = user?['email'] ?? firebaseUser?.email ?? 'email@example.com';
+    final String? photoUrl = user?['avatar'] ?? firebaseUser?.photoURL;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Laundry Dashboard'),
+        title: const Text('Laundry Dashboard'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () => _showLogoutDialog(context),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Profile Card
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(16),
@@ -112,202 +135,66 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  // Profile Picture
                   CircleAvatar(
                     radius: 40,
                     backgroundImage:
-                        user?.photoURL != null
-                            ? NetworkImage(user!.photoURL!)
-                            : null,
-                    child:
-                        user?.photoURL == null
-                            ? Icon(Icons.person, size: 40, color: Colors.blue)
-                            : null,
+                        photoUrl != null ? NetworkImage(photoUrl) : null,
+                    child: photoUrl == null
+                        ? const Icon(Icons.person, size: 40, color: Colors.blue)
+                        : null,
                     backgroundColor: Colors.blue.shade100,
                   ),
-
-                  SizedBox(height: 16),
-
-                  // User Name
-                  Text(
-                    user?.displayName ?? 'Pengguna',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-
-                  SizedBox(height: 8),
-
-                  // User Email
-                  Text(
-                    user?.email ?? 'email@example.com',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ),
-
-                  SizedBox(height: 16),
-
-                  // Verified Badge
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.verified, color: Colors.white, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          'Terverifikasi',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const SizedBox(height: 16),
+                  Text(displayName,
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text(email,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600])),
                 ],
               ),
             ),
-
-            SizedBox(height: 32),
-
-            // Menu Items
-            Text(
-              'Menu Laundry',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-
-            SizedBox(height: 16),
-
-            // Menu Grid
+            const SizedBox(height: 32),
+            const Text('Menu Laundry',
+                style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
             GridView.count(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
               children: [
                 _buildMenuCard(
                   icon: Icons.local_laundry_service,
-                  title: 'Cuci & Setrika',
-                  subtitle: 'Layanan cuci setrika',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Menu Cuci & Setrika')),
-                    );
-                  },
+                  title: 'Booking',
+                  subtitle: 'Buat pesanan laundry',
+                  targetPage: const BookingPage(),
+                  context: context,
                 ),
                 _buildMenuCard(
                   icon: Icons.schedule,
-                  title: 'Riwayat Order',
-                  subtitle: 'Lihat pesanan Anda',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Menu Riwayat Order')),
-                    );
-                  },
+                  title: 'Riwayat Booking',
+                  subtitle: 'Lihat riwayat pesanan',
+                  targetPage: const BookingListPage(),
+                  context: context,
                 ),
                 _buildMenuCard(
                   icon: Icons.payment,
-                  title: 'Pembayaran',
-                  subtitle: 'Metode pembayaran',
-                  onTap: () {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Menu Pembayaran')));
-                  },
+                  title: 'Riwayat Pembayaran',
+                  subtitle: 'Lihat pembayaran Anda',
+                  targetPage: const PaymentHistoryPage(),
+                  context: context,
                 ),
                 _buildMenuCard(
-                  icon: Icons.location_on,
-                  title: 'Alamat',
-                  subtitle: 'Kelola alamat Anda',
-                  onTap: () {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Menu Alamat')));
-                  },
+                  icon: Icons.track_changes,
+                  title: 'Lacak Pesanan',
+                  subtitle: 'Lihat status pesanan',
+                  targetPage: const tracking_page.TrackingPage(bookingId: 1),
+                  context: context,
                 ),
               ],
-            ),
-
-            SizedBox(height: 32),
-
-            // Quick Stats
-            Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade400, Colors.blue.shade600],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        '5',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Total Order',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                  Container(height: 40, width: 1, color: Colors.white30),
-                  Column(
-                    children: [
-                      Text(
-                        '2',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Sedang Proses',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                  Container(height: 40, width: 1, color: Colors.white30),
-                  Column(
-                    children: [
-                      Text(
-                        '3',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Selesai',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
           ],
         ),

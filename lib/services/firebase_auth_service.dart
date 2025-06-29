@@ -5,46 +5,45 @@ import 'dart:convert';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-  static const String backendUrl = 'http://your-laravel-domain.com/api';
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+  static const String backendUrl = 'http://172.20.10.5/kelompok_mobile/public';
 
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Google Sign In
+      print("Memulai Google Sign-In...");
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+      if (googleUser == null) {
+        print("Login Google dibatalkan oleh user.");
+        return null;
+      }
 
-      // Get auth details
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-      // Create credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Sign in to Firebase
       final userCredential = await _auth.signInWithCredential(credential);
 
-      // Kirim ke Laravel backend
+      print("Login berhasil: ${userCredential.user?.email}");
+
       await _syncWithBackend(userCredential.user!);
 
       return userCredential;
-    } catch (e) {
+    } catch (e, stack) {
       print('Google Sign In Error: $e');
+      print('Stack trace: $stack');
       return null;
     }
   }
 
   Future<void> _syncWithBackend(User user) async {
     try {
-      // Get Firebase ID token
       final idToken = await user.getIdToken();
 
-      // Kirim ke Laravel
       final response = await http.post(
-        Uri.parse('$backendUrl/auth/firebase'),
+        Uri.parse('$backendUrl/api/auth/firebase'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'firebase_token': idToken,
@@ -65,9 +64,7 @@ class FirebaseAuthService {
     await _auth.signOut();
   }
 
-  User? getCurrentUser() {
-    return _auth.currentUser;
-  }
+  User? getCurrentUser() => _auth.currentUser;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lottie/lottie.dart';
 import 'payment_page.dart';
 
 class TrackingPage extends StatefulWidget {
@@ -33,13 +34,9 @@ class _TrackingPageState extends State<TrackingPage> {
       ),
       headers: {
         'Authorization': 'Bearer $token',
-        'Accept':
-            'application/json', // sangat penting agar Laravel kembalikan JSON
+        'Accept': 'application/json',
       },
     );
-
-    print('Status code: ${response.statusCode}');
-    print('Response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -55,15 +52,59 @@ class _TrackingPageState extends State<TrackingPage> {
     }
   }
 
+  Future<void> navigateBackWithAnimation() async {
+    Navigator.of(context).push(PageRouteBuilder(
+      opaque: false,
+      barrierDismissible: false,
+      pageBuilder: (_, __, ___) => const FullscreenLottieScreen(),
+    ));
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      Navigator.of(context).pop(); // tutup layar animasi
+      Navigator.of(context).pop(); // kembali ke halaman sebelumnya
+    }
+  }
+
+  Future<void> navigateToPaymentWithAnimation() async {
+    Navigator.of(context).push(PageRouteBuilder(
+      opaque: false,
+      barrierDismissible: false,
+      pageBuilder: (_, __, ___) => const FullscreenLottieScreen(),
+    ));
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      Navigator.of(context).pop(); // tutup layar animasi
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => PaymentPage(bookingId: widget.bookingId),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Pelacakan Booking')),
-      body: Center(
-        child:
-            isLoading
-                ? const CircularProgressIndicator()
-                : Column(
+    return WillPopScope(
+      onWillPop: () async {
+        await navigateBackWithAnimation();
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Pelacakan Booking'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: navigateBackWithAnimation,
+          ),
+        ),
+        body: Center(
+          child: isLoading
+              ? const CircularProgressIndicator()
+              : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
@@ -73,20 +114,31 @@ class _TrackingPageState extends State<TrackingPage> {
                     const SizedBox(height: 20),
                     if (status == "Pending" || status == "Menunggu Konfirmasi")
                       ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (_) =>
-                                      PaymentPage(bookingId: widget.bookingId),
-                            ),
-                          );
-                        },
+                        onPressed: navigateToPaymentWithAnimation,
                         child: const Text('Upload Bukti Pembayaran'),
                       ),
                   ],
                 ),
+        ),
+      ),
+    );
+  }
+}
+
+class FullscreenLottieScreen extends StatelessWidget {
+  const FullscreenLottieScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Lottie.asset(
+          'assets/lottie/Animation - 1751188217430.json',
+          width: 200,
+          height: 200,
+          repeat: false,
+        ),
       ),
     );
   }
