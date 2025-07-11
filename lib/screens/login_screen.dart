@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/firebase_auth_service.dart';
 import 'loading_success_screen.dart';
+import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -118,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // pastikan true
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -195,8 +196,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: const TextStyle(fontSize: 14),
                   ),
                 ),
-                // Tambahkan SizedBox bawah supaya ada spasi bawah scroll
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SignupScreen()),
+                    );
+                  },
+                  child: const Text("Belum punya akun? Daftar di sini"),
+                ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -205,3 +215,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+               

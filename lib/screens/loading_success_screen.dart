@@ -17,22 +17,22 @@ class _LoadingSuccessScreenState extends State<LoadingSuccessScreen> {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
-      Navigator.pushReplacement(
-  context,
-  PageRouteBuilder(
-    pageBuilder: (_, __, ___) => HomeScreen(
-      user: widget.user ?? {
-        'name': 'Pengguna',
-        'email': 'email@example.com',
-        'avatar': null,
-      },
-    ),
-    transitionsBuilder: (_, animation, __, child) {
-      return FadeTransition(opacity: animation, child: child);
-    },
-  ),
-);
 
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => HomeScreen(
+            user: widget.user ?? {
+              'name': 'Pengguna',
+              'email': 'email@example.com',
+              'avatar': null,
+            },
+          ),
+          transitionsBuilder: (_, animation, __, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      );
     });
   }
 
@@ -40,14 +40,19 @@ class _LoadingSuccessScreenState extends State<LoadingSuccessScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Lottie.asset(
-          'assets/lottie/Animation - 1751188217430.json',
-          width: 200,
-          repeat: false,
-          onLoaded: (composition) {
-            debugPrint('Animation Loaded: Duration - \${composition.duration}');
-          },
+      body: SafeArea(
+        child: Center(
+          child: Lottie.asset(
+            'assets/lottie/Animation - 1751188217430.json',
+            width: 200,
+            repeat: false,
+            onLoaded: (composition) {
+              debugPrint('✅ Animation Loaded: Duration - ${composition.duration}');
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return const Text('❌ Gagal memuat animasi', style: TextStyle(color: Colors.red));
+            },
+          ),
         ),
       ),
     );

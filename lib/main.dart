@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'screens/auth_wrapper.dart';
+import 'screens/splash_screen.dart';
 import 'ui/theme.dart';
 
 void main() async {
@@ -17,8 +18,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Laundry App',
       theme: AppTheme.lightTheme,
-      home: AuthWrapper(),
+      home: SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
+    

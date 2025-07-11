@@ -9,8 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-
+  lottie: ^3.1.0
   flutter_svg: ^2.0.10
   intl: ^0.18.1
   flutter_spinkit: ^5.2.0
@@ -23,20 +22,32 @@ dependencies:
   image_picker: ^1.0.4
   cached_network_image: ^3.3.0
   page_transition: ^2.0.9
-  lottie: ^3.1.0
   google_fonts: ^6.2.1
   cupertino_icons: ^1.0.8
-
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.5
   flutter_lints: ^3.0.0 
+
+flutter_launcher_icons:
+  ios: false
+  android: true
+  image_path: "assets/logo.png"
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: "assets/splash_full.png"
+  android: true
+  ios: false
+  fullscreen: true
 
 flutter:
   uses-material-design: true
   assets:
-    - "assets/lottie/Animation - 1751188217430.json"
-    - "assets/google.png"
-
-
+    - assets/lottie/Animation - 1751188217430.json
+    - assets/google.png
+    - assets/logo.png
+    - assets/splash_full.png
