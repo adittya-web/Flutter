@@ -9,6 +9,7 @@
         android:label="tugaskelompok"
         android:icon="@mipmap/ic_launcher"
         android:name="androidx.multidex.MultiDexApplication">
+        android:usesCleartextTraffic="true"
         
         <activity
             android:name=".MainActivity"
@@ -23,6 +24,7 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
+                android:value="ca-app-pub-3940256099942544~3347511713" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -33,6 +35,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+             <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false"/>
     </application>
 
     <queries>
