@@ -13,7 +13,7 @@ class HomeTabScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Selamat Pagi, ${displayName ?? 'Pengguna'}!',
+            'Selamat Datang, ${displayName ?? 'Pengguna'}!',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
