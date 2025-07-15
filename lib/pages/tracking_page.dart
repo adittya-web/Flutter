@@ -30,12 +30,9 @@ class _TrackingPageState extends State<TrackingPage> {
 
     final response = await http.get(
       Uri.parse(
-        'http://172.20.10.5/kelompok_mobile/public/api/bookings/${widget.bookingId}',
+        'http://10.234.134.244/kelompok_mobile/public/api/bookings/${widget.bookingId}',
       ),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -53,11 +50,13 @@ class _TrackingPageState extends State<TrackingPage> {
   }
 
   Future<void> navigateBackWithAnimation() async {
-    Navigator.of(context).push(PageRouteBuilder(
-      opaque: false,
-      barrierDismissible: false,
-      pageBuilder: (_, __, ___) => const FullscreenLottieScreen(),
-    ));
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: false,
+        pageBuilder: (_, __, ___) => const FullscreenLottieScreen(),
+      ),
+    );
 
     await Future.delayed(const Duration(seconds: 2));
 
@@ -68,11 +67,13 @@ class _TrackingPageState extends State<TrackingPage> {
   }
 
   Future<void> navigateToPaymentWithAnimation() async {
-    Navigator.of(context).push(PageRouteBuilder(
-      opaque: false,
-      barrierDismissible: false,
-      pageBuilder: (_, __, ___) => const FullscreenLottieScreen(),
-    ));
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: false,
+        pageBuilder: (_, __, ___) => const FullscreenLottieScreen(),
+      ),
+    );
 
     await Future.delayed(const Duration(seconds: 2));
 
@@ -102,23 +103,25 @@ class _TrackingPageState extends State<TrackingPage> {
           ),
         ),
         body: Center(
-          child: isLoading
-              ? const CircularProgressIndicator()
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Status: $status',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                    const SizedBox(height: 20),
-                    if (status == "Pending" || status == "Menunggu Konfirmasi")
-                      ElevatedButton(
-                        onPressed: navigateToPaymentWithAnimation,
-                        child: const Text('Upload Bukti Pembayaran'),
+          child:
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Status: $status',
+                        style: const TextStyle(fontSize: 18),
                       ),
-                  ],
-                ),
+                      const SizedBox(height: 20),
+                      if (status == "Pending" ||
+                          status == "Menunggu Konfirmasi")
+                        ElevatedButton(
+                          onPressed: navigateToPaymentWithAnimation,
+                          child: const Text('Upload Bukti Pembayaran'),
+                        ),
+                    ],
+                  ),
         ),
       ),
     );

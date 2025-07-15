@@ -50,7 +50,7 @@ class _PaymentPageState extends State<PaymentPage> {
     }
 
     try {
-      final uri = Uri.parse('http://172.20.10.5:8000/api/payments');
+      final uri = Uri.parse('http://10.234.134.244/api/payments');
       final request = http.MultipartRequest('POST', uri);
 
       request.headers['Authorization'] = 'Bearer $token';

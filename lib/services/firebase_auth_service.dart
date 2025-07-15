@@ -6,7 +6,7 @@ import 'dart:convert';
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
-  static const String backendUrl = 'http://172.20.10.5/kelompok_mobile/public';
+  static const String backendUrl = 'http://10.234.134.244/kelompok_mobile/public';
 
   Future<UserCredential?> signInWithGoogle() async {
     try {

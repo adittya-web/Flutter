@@ -29,7 +29,7 @@ class _BookingListPageState extends State<BookingListPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://172.20.10.5/kelompok_mobile/public/api/bookings'),
+        Uri.parse('http://10.234.134.244/kelompok_mobile/public/api/bookings'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
