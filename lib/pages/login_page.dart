@@ -17,7 +17,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> login() async {
     final url = Uri.parse(
-      "http://192.168.24.88/admin_app/public/api/login",
+      "http://10.234.134.244/kelompok_mobile/public/api/login",
     ); // Ganti dengan IP kamu
     final response = await http.post(
       url,
@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomePage(user: data['user'])),
+        MaterialPageRoute(builder: (_) => HomeScreen(user: data['user'])),
       );
     } else {
       showDialog(

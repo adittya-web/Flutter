@@ -22,21 +22,24 @@ class _SignupScreenState extends State<SignupScreen> {
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Pendaftaran Gagal"),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
+      builder:
+          (_) => AlertDialog(
+            title: const Text("Pendaftaran Gagal"),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   Future<void> _proceedWithRegister() async {
-    final url = Uri.parse("http://172.20.10.5/kelompok_mobile/public/api/users");
+    final url = Uri.parse(
+      "http://10.234.134.244/kelompok_mobile/public/api/users",
+    );
 
     try {
       final response = await http.post(
@@ -63,7 +66,8 @@ class _SignupScreenState extends State<SignupScreen> {
           MaterialPageRoute(builder: (_) => LoadingSuccessScreen(user: user)),
         );
       } else if (response.statusCode == 422) {
-        final errorMsg = data['errors']?.values.first?.first ??
+        final errorMsg =
+            data['errors']?.values.first?.first ??
             data['message'] ??
             'Validasi gagal.';
         _showErrorDialog(errorMsg);
@@ -123,7 +127,9 @@ class _SignupScreenState extends State<SignupScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: confirmPasswordController,
-              decoration: const InputDecoration(labelText: 'Konfirmasi Password'),
+              decoration: const InputDecoration(
+                labelText: 'Konfirmasi Password',
+              ),
               obscureText: true,
             ),
             const SizedBox(height: 24),
@@ -135,9 +141,10 @@ class _SignupScreenState extends State<SignupScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Daftar"),
+              child:
+                  isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Daftar"),
             ),
             const SizedBox(height: 16),
             TextButton(

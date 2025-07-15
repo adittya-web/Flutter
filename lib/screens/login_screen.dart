@@ -23,7 +23,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> login() async {
     setState(() => isLoading = true);
-    final url = Uri.parse("http://172.20.10.5/kelompok_mobile/public/api/login");
+    final url = Uri.parse(
+      "http://10.234.134.244/kelompok_mobile/public/api/login",
+    );
 
     try {
       final response = await http.post(
@@ -67,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
         'name': user.displayName,
         'email': user.email,
         'avatar': user.photoURL ?? '',
-        'provider': 'google'
+        'provider': 'google',
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -103,16 +105,17 @@ class _LoginScreenState extends State<LoginScreen> {
   void _showErrorDialog() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Login Gagal"),
-        content: const Text("Email atau password salah."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
+      builder:
+          (_) => AlertDialog(
+            title: const Text("Login Gagal"),
+            content: const Text("Email atau password salah."),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -129,7 +132,11 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 40),
-                const Icon(Icons.local_laundry_service, size: 80, color: Colors.blue),
+                const Icon(
+                  Icons.local_laundry_service,
+                  size: 80,
+                  color: Colors.blue,
+                ),
                 const SizedBox(height: 20),
                 Text(
                   'Laundry App',
@@ -177,20 +184,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Login"),
+                  child:
+                      isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text("Login"),
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: isGoogleLoading ? null : loginWithGoogle,
-                  icon: isGoogleLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Image.asset('assets/google.png', height: 24),
+                  icon:
+                      isGoogleLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : Image.asset('assets/google.png', height: 24),
                   label: Text(
                     isGoogleLoading ? 'Masuk...' : 'Login dengan Google',
                     style: const TextStyle(fontSize: 14),
@@ -215,4 +224,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-               

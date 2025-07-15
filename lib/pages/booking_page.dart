@@ -29,7 +29,7 @@ class _BookingPageState extends State<BookingPage> {
 
   Future<void> fetchServices() async {
     final response = await http.get(
-      Uri.parse('http://172.20.10.5/kelompok_mobile/public/api/services'),
+      Uri.parse('http://10.234.134.244/kelompok_mobile/public/api/services'),
       headers: {'Accept': 'application/json'},
     );
 
@@ -88,7 +88,7 @@ class _BookingPageState extends State<BookingPage> {
     final token = prefs.getString('token');
 
     final response = await http.post(
-      Uri.parse('http://172.20.10.5/kelompok_mobile/public/api/bookings'),
+      Uri.parse('http://10.234.134.244/kelompok_mobile/public/api/bookings'),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

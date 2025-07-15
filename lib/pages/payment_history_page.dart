@@ -26,7 +26,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
     final token = prefs.getString('token');
 
     final response = await http.get(
-      Uri.parse('http://172.20.10.5/kelompok_mobile/public/api/payments'),
+      Uri.parse('http://10.234.134.244/kelompok_mobile/public/api/payments'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
