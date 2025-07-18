@@ -57,7 +57,7 @@ class _BookingListPageState extends State<BookingListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat Booking'),
+        title: const Text('Riwayat Bookingg'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 2,
