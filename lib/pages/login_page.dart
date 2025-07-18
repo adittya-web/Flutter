@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomePage(user: data['user'])),
+        MaterialPageRoute(builder: (_) => HomeScreen(user: data['user'])),
       );
     } else {
       showDialog(
